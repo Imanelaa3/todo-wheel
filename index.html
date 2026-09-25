@@ -31,10 +31,15 @@
         <canvas id="wheel" width="400" height="400" aria-label="Roue des tâches"></canvas>
       </div>
       <button id="spin-btn" type="button">Faire tourner</button>
-      <p id="result" role="status" aria-live="polite"></p>
+      <div id="result" class="result" role="status" aria-live="polite" hidden>
+        <p class="result-label">À toi de jouer</p>
+        <p id="result-text" class="result-text"></p>
+        <button id="done-btn" type="button" class="result-done">C'est fait ✓</button>
+      </div>
     </section>
   </main>
 
+  <canvas id="fx" aria-hidden="true"></canvas>
   <script src="app.js"></script>
 </body>
 </html>
