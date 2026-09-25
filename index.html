@@ -8,34 +8,47 @@
 </head>
 <body>
   <header>
-    <h1>🎡 Roue des tâches</h1>
-    <p class="subtitle">Remplis ta liste, fais tourner la roue, et laisse le hasard choisir.</p>
+    <h1>Roue des tâches</h1>
+    <p class="subtitle">Touche <strong>+</strong> pour ajouter une tâche, puis fais tourner la roue.</p>
   </header>
 
   <main>
-    <section class="panel" aria-labelledby="list-title">
-      <h2 id="list-title">Ma todo liste</h2>
-      <form id="task-form">
-        <input id="task-input" type="text" placeholder="Nouvelle tâche…" maxlength="60" required autocomplete="off">
-        <button type="submit">Ajouter</button>
-      </form>
-      <ul id="task-list"></ul>
-      <p id="empty-msg" class="muted">Aucune tâche pour l'instant. Ajoute-en une !</p>
-      <button id="clear-done" class="secondary" type="button">Supprimer les tâches terminées</button>
-    </section>
+    <section class="wheel" aria-label="La roue">
+      <div id="mag" class="mag" role="group" aria-label="Tâches de la roue"></div>
 
-    <section class="panel wheel-panel" aria-labelledby="wheel-title">
-      <h2 id="wheel-title">La roue</h2>
-      <div class="wheel-wrapper">
-        <div class="pointer" aria-hidden="true"></div>
-        <canvas id="wheel" width="400" height="400" aria-label="Roue des tâches"></canvas>
-      </div>
       <button id="spin-btn" type="button">Faire tourner</button>
-      <div id="result" class="result" role="status" aria-live="polite" hidden>
-        <p class="result-label">À toi de jouer</p>
-        <p id="result-text" class="result-text"></p>
+
+      <!-- Ajout d'une tâche : s'ouvre en touchant la pastille + -->
+      <form id="add-form" class="sheet" hidden>
+        <label for="task-input" class="sheet-label">Nouvelle tâche</label>
+        <div class="row">
+          <input id="task-input" type="text" placeholder="Ex. : ranger le bureau" maxlength="60" required autocomplete="off">
+          <button type="submit">Ajouter</button>
+        </div>
+        <button id="add-close" type="button" class="link">Terminé</button>
+      </form>
+
+      <!-- Tâche touchée à la main -->
+      <div id="task-sheet" class="sheet" hidden>
+        <p class="sheet-label">Tâche</p>
+        <p id="task-sheet-text" class="sheet-text"></p>
+        <div class="row">
+          <button id="task-done" type="button">C'est fait ✓</button>
+          <button id="task-delete" type="button" class="ghost">Supprimer</button>
+        </div>
+      </div>
+
+      <!-- Résultat du tirage -->
+      <div id="result" class="sheet result" role="status" aria-live="polite" hidden>
+        <p class="sheet-label">À toi de jouer</p>
+        <p id="result-text" class="sheet-text"></p>
         <button id="done-btn" type="button" class="result-done">C'est fait ✓</button>
       </div>
+
+      <p id="done-count" class="done-count" hidden>
+        <span id="done-count-text"></span>
+        <button id="clear-done" type="button" class="link">Effacer</button>
+      </p>
     </section>
   </main>
 

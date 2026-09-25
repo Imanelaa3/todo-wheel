@@ -5,10 +5,13 @@
   --muted: #62786a;
   --accent: #198754;
   --accent-dark: #0f5132;
+  --mint: #7ee2a8;
+  --mint-soft: #e3f7ea;
+  --magnet-bg: #ffffff;
+  --magnet-ink: #0f5132;
   --pink: #ff4fa3;
   --pink-dark: #d62f82;
   --border: #dbe7df;
-  --picked: #ffe3f1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,8 +21,9 @@
     --panel: #16231b;
     --text: #e6f2ea;
     --muted: #93ab9b;
+    --mint-soft: #1d3527;
+    --magnet-bg: #eafaf0;
     --border: #2a3d31;
-    --picked: #4a1f35;
   }
 }
 :root[data-theme="dark"] {
@@ -28,8 +32,9 @@
   --panel: #16231b;
   --text: #e6f2ea;
   --muted: #93ab9b;
+  --mint-soft: #1d3527;
+  --magnet-bg: #eafaf0;
   --border: #2a3d31;
-  --picked: #4a1f35;
 }
 
 * { box-sizing: border-box; }
@@ -42,37 +47,12 @@ body {
   color: var(--text);
 }
 
-header { text-align: center; padding-block: 2rem 1rem; }
-h1 { margin: 0; }
-.subtitle, .muted { color: var(--muted); }
+header { text-align: center; padding-block: 1.75rem .5rem; }
+h1 { margin: 0; font-size: 1.8rem; text-wrap: balance; }
+.subtitle { color: var(--muted); margin: .4rem 0 0; }
 
-main {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding-block: 1rem;
-}
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-}
-
-form { display: flex; gap: .5rem; }
-input[type="text"] {
-  flex: 1;
-  min-width: 0;
-  padding: .6rem .8rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 1rem;
-  background: var(--panel);
-  color: var(--text);
-}
+main { max-width: 480px; margin: 0 auto; padding-block: 1rem 3rem; }
+.wheel { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 
 button {
   padding: .6rem 1rem;
@@ -80,84 +60,205 @@ button {
   border-radius: 8px;
   background: var(--accent);
   color: #fff;
+  font: inherit;
   font-size: 1rem;
   cursor: pointer;
 }
 button:hover { background: var(--accent-dark); }
 button:disabled { opacity: .5; cursor: not-allowed; }
 button:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
-button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); margin-top: 1rem; }
-button.icon { background: transparent; color: var(--muted); padding: .2rem .5rem; }
-button.icon:hover { color: var(--pink-dark); }
-
-ul { list-style: none; padding: 0; margin: 1rem 0 0; }
-li {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  padding: .5rem;
-  border-bottom: 1px solid var(--border);
-  transition: background .3s;
-}
-li span { flex: 1; word-break: break-word; }
-li.done span { text-decoration: line-through; color: var(--muted); }
-li.picked { background: var(--picked); border-radius: 6px; }
-
-/* ---------- La roue ---------- */
-.wheel-panel { text-align: center; }
-.wheel-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto 1rem;
-  padding-top: 14px; /* place pour le pointeur */
-}
-#wheel { display: block; width: 100%; height: auto; aspect-ratio: 1; cursor: pointer; }
-
-/* Pointeur qui "claque" à chaque passage de part */
-.pointer {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 30px;
-  height: 40px;
-  margin-left: -15px;
-  background: var(--pink);
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  transform-origin: 50% 20%;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
-  z-index: 1;
-}
+button.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+button.ghost:hover { background: var(--mint-soft); }
+button.link { background: none; color: var(--accent); padding: .3rem .4rem; text-decoration: underline; }
+button.link:hover { color: var(--accent-dark); }
 
 #spin-btn {
   padding: .8rem 2rem;
   font-size: 1.1rem;
   font-weight: 700;
   border-radius: 999px;
-  background: var(--accent);
   box-shadow: 0 4px 0 var(--accent-dark);
   transition: transform .1s, box-shadow .1s;
 }
 #spin-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-dark); }
 
-/* Carte du résultat : apparaît avec un rebond */
-.result {
-  margin: 1.2rem auto 0;
-  max-width: 340px;
-  padding: 1rem 1.2rem;
+/* ══ La roue : un "Magnetic select" adapté ══════════════════
+   Adapted from Bencho's Magnetic select (bencho.dev, MIT).
+
+   TWO ELEMENTS, TWO TRANSFORMS. The chip is placed by left/top
+   and moved by the spring's transform (set from app.js); the
+   skin inside it carries the CSS lean. They cannot share an
+   element: CSS `scale` and `translate` are applied BEFORE
+   `transform` rather than folded into it, so a rule here and a
+   spring there do not average out, they fight every frame. So
+   nothing in this file may set or transition a transform on
+   .mag-chip, and the transitions below name their properties
+   one at a time — a `transition: all` would sweep the
+   transform up with the colours. */
+.mag {
+  position: relative;
+  max-width: 100%;
+  touch-action: manipulation;
+}
+
+/* the chip is a POSITION and nothing else: no surface, no
+   corner, no colour. Everything you can see is the skin */
+.mag-chip {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mag-chip:hover { background: none; }
+.mag-chip:focus-visible { outline: none; }
+.mag-chip:focus-visible .mag-skin { outline: 3px solid var(--pink); outline-offset: 3px; }
+
+.mag-skin {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11%;
+  /* always round. A rotated square sweeps a wider box than it
+     occupies and eats the clearance, where a rotated circle is
+     a circle and costs nothing. */
+  border-radius: 50%;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  text-align: center;
+  /* ── the lean, and nothing else ──────────────────────────
+     One transform, doing one thing. The 260ms is what makes a
+     value changing every frame read as damping rather than as
+     tracking. */
+  transform: translate(var(--lx, 0px), var(--ly, 0px));
+  transition:
+    transform 260ms cubic-bezier(0.22, 0.9, 0.28, 1),
+    background-color 0.24s ease,
+    color 0.24s ease,
+    box-shadow 0.24s ease,
+    opacity 0.24s ease;
+}
+
+.mag-label {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--label-size, 12px);
+  font-weight: 700;
+  line-height: 1.15;
+  /* le texte est déjà réduit pour que chaque mot tienne ; on ne
+     coupe un mot que s'il est vraiment trop long */
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* ── NOTHING ANSWERS A CURSOR BY RESIZING ─────────────────
+   A swell on hover is a scale, and scaling one chip in a
+   cluster packed a few pixels off touching closes the gaps.
+   What the cursor gets is the tone: a change of ink rather
+   than of geometry, which costs the packing nothing. */
+@media (hover: hover) {
+  .mag-chip:hover .mag-skin { filter: brightness(1.12); }
+}
+
+/* the magnet while the draw is running, or a chip touched by hand */
+.mag-chip[data-on] .mag-skin {
+  background: var(--magnet-bg);
+  color: var(--magnet-ink);
+  box-shadow: 0 0 0 3px var(--mint), 0 6px 18px rgba(15, 81, 50, .25);
+}
+
+/* the chosen one: pink, the green's complement, with a halo */
+.mag-chip[data-won] .mag-skin {
+  background: var(--pink);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 79, 163, .3), 0 8px 28px rgba(255, 79, 163, .55);
+}
+.mag-chip[data-won] .mag-skin::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 3px solid var(--pink);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: ring 1.1s ease-out 2;
+  opacity: 0;
+}
+@keyframes ring {
+  from { transform: scale(1); opacity: .9; }
+  to { transform: scale(1.7); opacity: 0; }
+}
+.mag[data-landed] .mag-chip:not([data-won]) .mag-skin { opacity: .45; }
+
+/* the + chip: an empty place in the cluster, waiting for a task */
+.mag-chip.add .mag-skin {
+  background: transparent;
+  border: 2px dashed var(--accent);
+  color: var(--accent);
+}
+.mag-chip.add .mag-label { font-size: calc(var(--label-size, 12px) * 2.4); font-weight: 400; line-height: 1; }
+.mag-chip.add[data-on] .mag-skin {
+  background: var(--mint-soft);
+  border-style: solid;
+  box-shadow: 0 0 0 3px var(--mint);
+}
+
+.mag-empty { position: absolute; inset: auto 0 0; margin: 0; text-align: center; color: var(--muted); font-size: .9rem; }
+
+/* ── Les fiches sous la roue ───────────────────────────── */
+.sheet {
+  width: 100%;
+  max-width: 360px;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
   border-radius: 14px;
+  background: var(--panel);
+  text-align: center;
+  animation: pop-in .5s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.sheet .row { display: flex; gap: .5rem; justify-content: center; }
+.sheet-label {
+  display: block;
+  margin: 0 0 .5rem;
+  font-size: .78rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sheet-text { margin: 0 0 .8rem; font-size: 1.3rem; font-weight: 800; overflow-wrap: anywhere; text-wrap: balance; }
+
+input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  padding: .6rem .8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 1rem; /* 16px : évite le zoom automatique d'iOS */
+  background: var(--bg);
+  color: var(--text);
+}
+#add-close { margin-top: .5rem; }
+
+.result {
+  border: 0;
   background: var(--pink);
   color: #fff;
   box-shadow: 0 8px 24px rgba(255, 79, 163, .35);
-  animation: pop-in .6s cubic-bezier(.34, 1.56, .64, 1) both;
 }
-.result-label { margin: 0; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; opacity: .9; }
-.result-text { margin: .3rem 0 .8rem; font-size: 1.35rem; font-weight: 800; word-break: break-word; text-wrap: balance; }
+.result .sheet-label { color: #fff; opacity: .9; }
 .result-done { background: #fff; color: var(--pink-dark); font-weight: 700; border-radius: 999px; }
 .result-done:hover { background: #ffe3f1; }
 
+.done-count { margin: 0; color: var(--muted); font-size: .9rem; }
+
 @keyframes pop-in {
-  from { opacity: 0; transform: scale(.6) translateY(12px); }
+  from { opacity: 0; transform: scale(.7) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
@@ -165,5 +266,7 @@ li.picked { background: var(--picked); border-radius: 6px; }
 #fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
 
 @media (prefers-reduced-motion: reduce) {
-  .result { animation: none; }
+  .mag-skin { transition-duration: 1ms; }
+  .sheet { animation: none; }
+  .mag-chip[data-won] .mag-skin::after { animation: none; }
 }
