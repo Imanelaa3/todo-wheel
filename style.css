@@ -1,0 +1,90 @@
+:root {
+  --bg: #f6f4fb;
+  --panel: #ffffff;
+  --text: #2b2540;
+  --muted: #7a7390;
+  --accent: #6c4cf1;
+  --accent-dark: #5335d6;
+  --border: #e3def2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header { text-align: center; padding: 2rem 1rem 1rem; }
+h1 { margin: 0; }
+.subtitle, .muted { color: var(--muted); }
+
+main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+form { display: flex; gap: .5rem; }
+input[type="text"] {
+  flex: 1;
+  padding: .6rem .8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+button {
+  padding: .6rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+button:hover { background: var(--accent-dark); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); margin-top: 1rem; }
+button.icon { background: transparent; color: var(--muted); padding: .2rem .5rem; }
+button.icon:hover { color: #d33; }
+
+ul { list-style: none; padding: 0; margin: 1rem 0 0; }
+li {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+li span { flex: 1; word-break: break-word; }
+li.done span { text-decoration: line-through; color: var(--muted); }
+li.picked { background: #efeaff; border-radius: 6px; }
+
+.wheel-panel { text-align: center; }
+.wheel-wrapper { position: relative; width: 100%; max-width: 400px; margin: 0 auto 1rem; }
+canvas { width: 100%; height: auto; }
+.pointer {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 26px solid var(--text);
+  z-index: 1;
+}
+#result { font-size: 1.2rem; font-weight: 600; min-height: 1.5em; }

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roue des tâches</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🎡 Roue des tâches</h1>
+    <p class="subtitle">Remplis ta liste, fais tourner la roue, et laisse le hasard choisir.</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="list-title">
+      <h2 id="list-title">Ma todo liste</h2>
+      <form id="task-form">
+        <input id="task-input" type="text" placeholder="Nouvelle tâche…" maxlength="60" required autocomplete="off">
+        <button type="submit">Ajouter</button>
+      </form>
+      <ul id="task-list"></ul>
+      <p id="empty-msg" class="muted">Aucune tâche pour l'instant. Ajoute-en une !</p>
+      <button id="clear-done" class="secondary" type="button">Supprimer les tâches terminées</button>
+    </section>
+
+    <section class="panel wheel-panel" aria-labelledby="wheel-title">
+      <h2 id="wheel-title">La roue</h2>
+      <div class="wheel-wrapper">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheel" width="400" height="400" aria-label="Roue des tâches"></canvas>
+      </div>
+      <button id="spin-btn" type="button">Faire tourner</button>
+      <p id="result" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
